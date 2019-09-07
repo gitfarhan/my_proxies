@@ -1,27 +1,25 @@
 from selenium.webdriver.chrome.options import Options
 from selenium import webdriver
 from subprocess import check_output, CalledProcessError
-from urllib.parse import urlparse
 import os
 import schedule
 from pathlib import Path
 import signal
 import time
-from pprint import pprint
-import requests
 import pymongo
 from dotenv import load_dotenv
 
 env = f"{os.getcwd()}/.env"
 load_dotenv(env)
 
-MONGO = os.environ.get("MONGO_LOCAL", "mongodb://172.22.0.4:27113/")
+MONGO_LOCAL = os.environ.get("MONGO_LOCAL")
+MONGO_LIVE = os.environ.get("MONGO_LIVE")
 
 devflag = Path(f"{os.getcwd()}/.devflag")
 
-myclient = pymongo.MongoClient(MONGO)
+myclient = pymongo.MongoClient(MONGO_LIVE)
 if devflag.exists():
-    myclient = pymongo.MongoClient(MONGO)
+    myclient = pymongo.MongoClient(MONGO_LOCAL)
 
 db = myclient['project_mayhem']
 proxies = db['proxies']
@@ -60,7 +58,6 @@ def get_https_proxy():
     prefs = {"profile.managed_default_content_settings.images": 2}
     options.add_experimental_option("prefs", prefs)
     options.add_argument('--no-sandbox')
-    # options.add_argument(f'--proxy-server={PROXY}')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument("--disable-notifications")
     driver = webdriver.Chrome('/usr/lib/chromium-browser/chromedriver', chrome_options=options)
@@ -72,7 +69,6 @@ def get_https_proxy():
     rows = driver.find_elements_by_class_name("odd")
     result = []
     for row in rows:
-        # print(row.text)
         doc = row.text.split(" ")
         if doc[-1].strip().lower() == "yes":
             result.append(dict(
@@ -108,7 +104,8 @@ def get_all_data():
     return result
 
 
-schedule.every(10).minutes.do(collect)
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+if devflag.exists() is False:
+    schedule.every(10).minutes.do(collect)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
