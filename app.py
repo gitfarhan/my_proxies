@@ -10,12 +10,18 @@ import time
 from pprint import pprint
 import requests
 import pymongo
+from dotenv import load_dotenv
+
+env = f"{os.getcwd()}/.env"
+load_dotenv(env)
+
+MONGO = os.environ.get("MONGO_LOCAL", "mongodb://172.22.0.4:27113/")
 
 devflag = Path(f"{os.getcwd()}/.devflag")
 
-myclient = pymongo.MongoClient("mongodb://172.22.0.4:27113/")
+myclient = pymongo.MongoClient(MONGO)
 if devflag.exists():
-    myclient = pymongo.MongoClient("mongodb://46.101.77.153:27113/")
+    myclient = pymongo.MongoClient(MONGO)
 
 db = myclient['project_mayhem']
 proxies = db['proxies']
