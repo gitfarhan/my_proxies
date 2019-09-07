@@ -94,9 +94,6 @@ def getPIDs(process):
         pidlist = []
     return [str(e) for e in pidlist]
 
-
-
-
 def collect():
     refresh_proxies()
     for p in get_https_proxy():
