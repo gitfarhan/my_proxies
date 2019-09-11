@@ -91,9 +91,11 @@ def getPIDs(process):
     return [str(e) for e in pidlist]
 
 def collect():
-    refresh_proxies()
-    for p in get_https_proxy():
-        insert_data(data=p)
+    new_proxies = get_https_proxy()
+    if new_proxies:
+        refresh_proxies()
+        for p in new_proxies:
+            insert_data(data=p)
     for pid in getPIDs("chromium-browse"):
         os.kill(int(pid), signal.SIGTERM)
 
